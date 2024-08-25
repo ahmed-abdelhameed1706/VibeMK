@@ -311,3 +311,88 @@ export const resetPassword = async (req, res) => {
     });
   }
 };
+
+export const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide the email address",
+      });
+    }
+    if (!validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address",
+      });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already verified",
+      });
+    }
+
+    const verificationToken = generateVerificationToken();
+
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpiresAt = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    await sendVerificationEmail(email, verificationToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email sent",
+    });
+  } catch (error) {
+    console.log("error in the resendVerificationEmail controller", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const isTokenValid = async (req, res) => {
+  const resetToken = req.params.resetToken;
+  try {
+    if (!resetToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+    const user = await User.findOne({
+      resetPasswordToken: resetToken,
+      resetPasswordExpiresAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired token",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Token is valid",
+      valid: true,
+    });
+  } catch (error) {
+    console.log("error in the isTokenValid controller", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
