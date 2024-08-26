@@ -245,7 +245,7 @@ This document provides an overview of the application's design, including its fe
 - **Steps:**
 
   1. **Clone the Repository:**
-     - `git clone <repository-url>`
+     - `git clone https://github.com/ahmed-abdelhameed1706/VibeMK`
   2. **Install Backend Dependencies:**
      - Navigate to the repository directory: `cd VibeMK`
      - Install dependencies: `npm install`
