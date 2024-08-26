@@ -4,7 +4,6 @@ import {
   VERIFICATION_EMAIL_TEMPLATE,
   PASSWORD_RESET_SUCCESS_TEMPLATE,
 } from "./emailTemplates.js";
-import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 
 export const sendVerificationEmail = async (email, verificationToken) => {
   const recipient = [{ email }];
