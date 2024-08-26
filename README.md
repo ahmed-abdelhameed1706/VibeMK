@@ -24,3 +24,5 @@ VibeMK is a video sharing platform built with the MERN stack (MongoDB, Express.j
 ## Design Document
 
 For a detailed overview of the application's design, including its features, functionalities, and technical details, please refer to the [Application Design Document](design-doc.md).
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
