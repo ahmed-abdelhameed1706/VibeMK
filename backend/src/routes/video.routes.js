@@ -1,4 +1,7 @@
 import express from "express";
+import { validateGroupObjectId } from "../middlewares/validateGroupObjectId.js";
+import { validateVideoObjectId } from "../middlewares/validateVideoObjectId.js";
+import { validateUserObjectId } from "../middlewares/validateUserObjectId.js";
 
 const router = express.Router();
 
@@ -10,12 +13,10 @@ import {
   addUserToSeenBy,
 } from "../controllers/video.controller.js";
 
-import { validateVideoObjectId } from "../middlewares/validateVideoObjectId.js";
-
 router.post("/add", validateVideoObjectId, addVideo);
 router.put("/update", validateVideoObjectId, updateVideo);
 router.delete("/delete", validateVideoObjectId, deleteVideo);
-router.get("/user", getVideosForUserPerGroup);
-router.put("/seen", addUserToSeenBy);
+router.get("/user", validateUserObjectId, getVideosForUserPerGroup);
+router.put("/seen", validateVideoObjectId, addUserToSeenBy);
 
 export default router;
