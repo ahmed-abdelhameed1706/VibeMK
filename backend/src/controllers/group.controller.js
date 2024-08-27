@@ -71,7 +71,15 @@ export const getGroup = async (req, res) => {
         .json({ success: false, message: "Group not found" });
     }
 
-    const populatedGroup = await group.populate("members");
+    const populatedGroup = await group.populate({
+      path: "members",
+      select: "-password",
+      populate: {
+        path: "videos",
+        match: { _id: { $in: group.videos } }, // Filter to include only videos that belong to the group
+        select: "url updatedAt seenBy",
+      },
+    });
 
     res.status(200).json({ success: true, group: populatedGroup });
   } catch (error) {
@@ -136,7 +144,7 @@ export const leaveGroup = async (req, res) => {
 
 export const joinGroup = async (req, res) => {
   try {
-    const code = req.body;
+    const { code } = req.body;
     const user = await User.findById(req.userId);
 
     if (!code) {
@@ -145,7 +153,7 @@ export const joinGroup = async (req, res) => {
         .json({ success: false, message: "Code is required" });
     }
 
-    const group = await Group.findById(code);
+    const group = await Group.findOne({ code });
 
     if (!group) {
       return res

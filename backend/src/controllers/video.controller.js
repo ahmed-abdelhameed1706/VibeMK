@@ -186,7 +186,7 @@ export const deleteVideo = async (req, res) => {
 
 export const getVideosForUserPerGroup = async (req, res) => {
   try {
-    const { requestedUserId, groupId } = req.body;
+    const { requestedUserId, groupId } = req.query;
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -235,7 +235,7 @@ export const getVideosForUserPerGroup = async (req, res) => {
     const videos = await Video.find({
       group: groupId,
       owner: requestedUserId,
-    });
+    }).populate("seenBy", "fullName");
 
     if (!videos) {
       return res

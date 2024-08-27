@@ -7,9 +7,11 @@ import VerifyEmailPage from "./pages/verifyemailpage/VerifyEmailPage";
 import HomePage from "./pages/homepage/HomePage";
 import ForgotPasswordPage from "./pages/forgotpasswordpage/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/resetpasswordpage/ResetPasswordPage";
+import MyGroupsPage from "./pages/mygroupspage/MyGroupsPage";
+import GroupPage from "./pages/grouppage/GroupPage";
 
 import { useAuthStore } from "./store/authStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import ProtectRoute from "./components/Redirects/ProtectRoute";
 import RedirectAuthenticatedUsers from "./components/Redirects/RedirectAuthenticatedUsers";
@@ -20,13 +22,18 @@ import DashboardPage from "./pages/dashboardpage/DashboardPage";
 function App() {
   const { user, getMe, isCheckingAuth, isAuthenticated } = useAuthStore();
 
+  const [defaultGroup, setDefaultGroup] = useState(null);
+
   useEffect(() => {
     getMe();
+    if (localStorage.getItem("defaultGroup")) {
+      setDefaultGroup(localStorage.getItem("defaultGroupPage"));
+    }
   }, [getMe]);
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br 
+      className="min-h-screen flex flex-col bg-gradient-to-br 
     from-gray-900 via-green-900 to-emerald-900 relative overflow-hidden"
     >
       {/* Floating Shapes */}
@@ -58,7 +65,7 @@ function App() {
       {isAuthenticated && <Header />}
 
       {/* Main Content */}
-      <div className="min-h-screen  flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         {isCheckingAuth && <LoadingSpinner />}
 
         {!isCheckingAuth && (
@@ -67,7 +74,11 @@ function App() {
               path="/"
               element={
                 <ProtectRoute>
-                  <HomePage />
+                  {defaultGroup ? (
+                    <Navigate to={`/group/${defaultGroup}`} />
+                  ) : (
+                    <HomePage />
+                  )}
                 </ProtectRoute>
               }
             />
@@ -118,6 +129,22 @@ function App() {
                 <RedirectAuthenticatedUsers>
                   <ResetPasswordPage />
                 </RedirectAuthenticatedUsers>
+              }
+            />
+            <Route
+              path="/my-groups"
+              element={
+                <ProtectRoute>
+                  <MyGroupsPage />
+                </ProtectRoute>
+              }
+            />
+            <Route
+              path="/group/:code"
+              element={
+                <ProtectRoute>
+                  <GroupPage />
+                </ProtectRoute>
               }
             />
             <Route path="*" element={"404 - Page Not Found"} />

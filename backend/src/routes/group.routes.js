@@ -17,7 +17,7 @@ router.post("/", createGroup);
 router.get("/:code", getGroup);
 router.get("/", getGroupsForUser);
 
-router.post("/:id/join", joinGroup);
+router.post("/join", joinGroup);
 router.post("/:id/leave", validateGroupObjectId, leaveGroup);
 
 router.post("/:code/invite", sendInvitationEmail);

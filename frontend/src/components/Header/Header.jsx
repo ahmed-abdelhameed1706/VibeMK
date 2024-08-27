@@ -9,7 +9,7 @@ const Header = () => {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-xl shadow-md flex items-center justify-between p-4 fixed w-full"
+      className="bg-gray-900 bg-opacity-50 backdrop-filter backdrop-blur-xl shadow-md flex items-center justify-between p-4 w-full"
     >
       {/* Logo */}
       <div className="flex items-center">
