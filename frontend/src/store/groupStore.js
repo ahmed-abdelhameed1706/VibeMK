@@ -10,6 +10,8 @@ export const useGroupStore = create((set, get) => ({
   userGroups: [],
   groupMembers: [],
   error: null,
+  joinGroupError: null,
+  createGroupError: null,
   isLoading: false,
   message: null,
   newVideoUrl: "",
@@ -27,7 +29,7 @@ export const useGroupStore = create((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error.response.data.message || "Error Creating Group",
+        createGroupError: error.response.data.message || "Error Creating Group",
         isLoading: false,
       });
       throw error;
@@ -95,6 +97,38 @@ export const useGroupStore = create((set, get) => ({
     } catch (error) {
       set({
         error: error.response.data.message || "Error Toggling Default Group",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  joinGroup: async (code) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await axios.post(`${API_URL}/group/join`, { code });
+      set({
+        message: res.data.message,
+        isLoading: false,
+        group: res.data.group,
+      });
+    } catch (error) {
+      set({
+        joinGroupError: error.response.data.message || "Error Joining Group",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  leaveGroup: async (groupId) => {
+    set({ isLoading: true, error: null });
+    try {
+      await axios.post(`${API_URL}/group/${groupId}/leave`);
+      set({ isLoading: false });
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error Leaving Group",
         isLoading: false,
       });
       throw error;

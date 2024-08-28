@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const FloatingShape = ({ color, size, top, left, delay }) => {
   return (
     <motion.div
-      className={`absolute rounded-full ${color} ${size} opacity-20 blur-xl`}
+      className={`absolute rounded-full ${color} ${size} opacity-20 blur-xl pointer-events-none`}
       style={{ top: top, left: left }}
       animate={{
         y: ["0%", "100%", "0%"],

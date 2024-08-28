@@ -10,7 +10,14 @@ const MyGroupsPage = () => {
   const { userGroups, getGroupsForUser, isLoading } = useGroupStore();
 
   useEffect(() => {
-    getGroupsForUser();
+    const fetchGroupsForUser = async () => {
+      try {
+        await getGroupsForUser();
+      } catch (error) {
+        console.error("Failed to fetch groups for user", error);
+      }
+    };
+    fetchGroupsForUser();
   }, [getGroupsForUser]);
 
   const handleViewGroup = (groupCode) => {

@@ -40,4 +40,25 @@ export const useVideoStore = create((set) => ({
       throw error;
     }
   },
+  updateSeenBy: async (videoId) => {
+    set({ videoIsLoading: true, videoError: null });
+    try {
+      const response = await axios.put(`${API_URL}/video/seen`, { videoId });
+      const updatedVideo = response.data.videoViewers;
+
+      // Update the local state
+      set((state) => ({
+        userVideos: state.userVideos.map((video) =>
+          video._id === videoId ? { ...video, seenBy: updatedVideo } : video
+        ),
+        videoIsLoading: false,
+      }));
+    } catch (error) {
+      set({
+        videoError: error.response.data.message || "Error Updating Video",
+        videoIsLoading: false,
+      });
+      throw error;
+    }
+  },
 }));

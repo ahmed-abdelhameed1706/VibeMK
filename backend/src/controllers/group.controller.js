@@ -68,7 +68,11 @@ export const getGroup = async (req, res) => {
     if (!group) {
       return res
         .status(404)
-        .json({ success: false, message: "Group not found" });
+        .json({
+          success: false,
+          message:
+            "You are not a part of this group, join using the joining form.",
+        });
     }
 
     const populatedGroup = await group.populate({
@@ -120,18 +124,22 @@ export const leaveGroup = async (req, res) => {
     const group = await Group.findOne({ _id: groupId, members: user._id });
 
     if (!group) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "You are not part of that group, join using the joining form",
+      });
     }
 
     await group.updateOne({ $pull: { members: user._id } });
     await user.updateOne({ $pull: { groups: group._id } });
+    await user.updateOne({ $pull: { videos: { group: group._id } } });
+    await group.updateOne({ $pull: { videos: { owner: user._id } } });
 
     const updatedGroup = await Group.findById(groupId);
 
     if (updatedGroup.members.length === 0) {
       await Video.deleteMany({ group: groupId });
+
       await Group.findByIdAndDelete(groupId);
     }
 
@@ -176,7 +184,7 @@ export const joinGroup = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "Joined group successfully" });
+      .json({ success: true, message: "Joined group successfully", group });
   } catch (error) {
     console.error("Error in joinGroup controller: ", error);
     res.status(500).json({ success: false, message: "Error in joinGroup" });

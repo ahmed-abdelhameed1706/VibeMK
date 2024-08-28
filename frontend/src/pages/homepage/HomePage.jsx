@@ -13,7 +13,14 @@ const HomePage = () => {
   const [groupCode, setGroupCode] = useState("");
   const navigate = useNavigate();
 
-  const { group, createGroup, error } = useGroupStore();
+  const {
+    group,
+    createGroup,
+    error,
+    joinGroup,
+    createGroupError,
+    joinGroupError,
+  } = useGroupStore();
 
   const handleCreateGroup = async (e) => {
     e.preventDefault();
@@ -25,9 +32,14 @@ const HomePage = () => {
     }
   };
 
-  const joinGroup = (e) => {
+  const handleJoinGroup = async (e) => {
     e.preventDefault();
-    navigate(`/group/${groupCode}`);
+    try {
+      await joinGroup(groupCode);
+      navigate(`/group/${groupCode}`);
+    } catch (error) {
+      console.error("Failed to join group:", error);
+    }
   };
 
   const navigateToMyGroups = (e) => {
@@ -46,7 +58,7 @@ const HomePage = () => {
         <h2 className="text-3xl font-bold mb-6 text-center bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text">
           Welcome, {user?.fullName || "User"}
         </h2>
-
+        {error && <p className="text-red-500 font-semibold mb-2">{error}</p>}
         <div className="space-y-6">
           <motion.div
             className="bg-gray-900 bg-opacity-50 p-6 rounded-lg shadow-lg"
@@ -65,7 +77,11 @@ const HomePage = () => {
                 value={groupName}
                 onChange={(e) => setGroupName(e.target.value)}
               />
-              {error && <p className="text-red-500 text-sm">{error}</p>}
+              {createGroupError && (
+                <p className="text-red-500 font-semibold mb-2">
+                  {createGroupError}
+                </p>
+              )}
               <GradientButton
                 type="submit"
                 label={"Create Group"}
@@ -84,7 +100,7 @@ const HomePage = () => {
             <h3 className="text-xl font-bold mb-4 text-center text-green-500">
               Join an Existing Group
             </h3>
-            <form onSubmit={joinGroup}>
+            <form onSubmit={handleJoinGroup}>
               <Input
                 icon={Users}
                 type="text"
@@ -92,6 +108,11 @@ const HomePage = () => {
                 value={groupCode}
                 onChange={(e) => setGroupCode(e.target.value)}
               />
+              {joinGroupError && (
+                <p className="text-red-500 font-semibold mb-2 ">
+                  {joinGroupError}
+                </p>
+              )}
               <GradientButton
                 type="submit"
                 label="Join Group"

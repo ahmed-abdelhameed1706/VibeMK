@@ -20,6 +20,8 @@ const GroupPage = () => {
     toggleDefaultGroup,
     defaultGroupCode,
     defaultGroupName,
+    leaveGroup,
+    getGroupsForUser,
   } = useGroupStore();
   const { addVideo, videoError, videoIsLoading, getVideosForUser, userVideos } =
     useVideoStore();
@@ -82,7 +84,13 @@ const GroupPage = () => {
   };
 
   const handleLeaveGroup = () => {
-    navigate("/my-groups");
+    try {
+      leaveGroup(group._id);
+      getGroupsForUser();
+      navigate("/my-groups");
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleBackToMyGroups = () => {
@@ -111,8 +119,75 @@ const GroupPage = () => {
 
   return (
     <div className="p-4 md:p-8 flex flex-col bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900">
-      {/* Group Information Section */}
-      <div className="mb-4 flex flex-col md:flex-row justify-between items-center bg-gray-800 bg-opacity-50 rounded-lg p-4 shadow-lg">
+      {/* Group Information Section on medium screens*/}
+
+      <div className="hidden md:flex md:w-[300px] md:h-[450px] md:fixed md:left-0 md:top-1/2 md:-translate-y-1/2 md:overflow-y-auto md:rounded-lg md:p-4 md:shadow-lg">
+        <div className="flex flex-col justify-between h-full">
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-bold text-green-500">
+              {group?.name}
+            </h1>
+            <p className="text-sm md:text-base text-gray-400">
+              Code: {group?.code}
+            </p>
+          </div>
+          {defaultGroupName ? (
+            <p className="mt-2 text-sm md:text-base text-green-400">
+              Default Group : {currentDefaultGroupName}
+            </p>
+          ) : (
+            ""
+          )}
+          {/* Buttons arranged in rows of two */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <GradientButton
+              label="My Groups"
+              onClick={handleBackToMyGroups}
+              className="flex-1 md:w-[calc(50%-0.5rem)]"
+            />
+            <GradientButton
+              label={
+                defaultGroupCode === group?.code
+                  ? "Remove Default"
+                  : "Set as Default"
+              }
+              onClick={handleToggleDefaultGroup}
+              className="flex-1 md:w-[calc(50%-0.5rem)]"
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <GradientButton
+              label="Leave Group"
+              onClick={handleLeaveGroup}
+              className="flex-1 md:w-[calc(50%-0.5rem)]"
+            />
+            <GradientButton
+              label="Invite to Group"
+              onClick={handleInviteToGroup}
+              className="flex-1 md:w-[calc(50%-0.5rem)]"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Back to My Groups Button */}
+      <div className="mb-4 flex justify-between items-center gap-4 md:hidden">
+        <GradientButton label="My Groups" onClick={handleBackToMyGroups} />
+        <GradientButton
+          label={
+            defaultGroupCode === group?.code
+              ? "Remove Default"
+              : "Set as Default"
+          }
+          onClick={handleToggleDefaultGroup}
+        />
+      </div>
+      {(error || videoError) && (
+        <p className="text-red-500 text-center">{error ? error : videoError}</p>
+      )}
+
+      {/* Group Information Section on mobile screens*/}
+      <div className="md:hidden mb-4 flex flex-col md:flex-row justify-between items-center bg-gray-800 bg-opacity-50 rounded-lg p-4 shadow-lg">
         <div className="text-center md:text-left">
           <h1 className="text-2xl md:text-3xl font-bold text-green-500">
             {group?.name}
@@ -129,21 +204,6 @@ const GroupPage = () => {
           ""
         )}
       </div>
-      {/* Back to My Groups Button */}
-      <div className="mb-4 flex justify-between items-center gap-4">
-        <GradientButton label="My Groups" onClick={handleBackToMyGroups} />
-        <GradientButton
-          label={
-            defaultGroupCode === group?.code
-              ? "Remove Default"
-              : "Set as Default"
-          }
-          onClick={handleToggleDefaultGroup}
-        />
-      </div>
-      {(error || videoError) && (
-        <p className="text-red-500 text-center">{error ? error : videoError}</p>
-      )}
 
       <div className="flex flex-col md:flex-row flex-grow">
         {/* Group Members (Hidden on Mobile) */}
@@ -205,6 +265,7 @@ const GroupPage = () => {
                 {userVideos.map((video, index) => (
                   <VideoCard
                     key={index}
+                    videoId={video._id}
                     url={video.url}
                     updatedAt={video.updatedAt}
                     seenBy={video.seenBy
@@ -254,7 +315,7 @@ const GroupPage = () => {
       </div>
 
       {/* Bottom Left Buttons */}
-      <div className="flex flex-col space-y-4 mt-4 md:mt-0">
+      <div className="flex flex-col space-y-4 mt-4 md:mt-0 md:hidden">
         <div className="md:fixed md:bottom-4 md:left-4 flex space-x-4">
           <GradientButton label="Leave Group" onClick={handleLeaveGroup} />
           <GradientButton
