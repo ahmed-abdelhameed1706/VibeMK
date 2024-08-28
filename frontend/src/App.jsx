@@ -11,7 +11,8 @@ import MyGroupsPage from "./pages/mygroupspage/MyGroupsPage";
 import GroupPage from "./pages/grouppage/GroupPage";
 
 import { useAuthStore } from "./store/authStore";
-import { useEffect, useState } from "react";
+import { useGroupStore } from "./store/groupStore";
+import { useEffect } from "react";
 
 import ProtectRoute from "./components/Redirects/ProtectRoute";
 import RedirectAuthenticatedUsers from "./components/Redirects/RedirectAuthenticatedUsers";
@@ -21,14 +22,10 @@ import DashboardPage from "./pages/dashboardpage/DashboardPage";
 
 function App() {
   const { user, getMe, isCheckingAuth, isAuthenticated } = useAuthStore();
-
-  const [defaultGroup, setDefaultGroup] = useState(null);
+  const { defaultGroupCode } = useGroupStore();
 
   useEffect(() => {
     getMe();
-    if (localStorage.getItem("defaultGroup")) {
-      setDefaultGroup(localStorage.getItem("defaultGroupPage"));
-    }
   }, [getMe]);
 
   return (
@@ -74,8 +71,8 @@ function App() {
               path="/"
               element={
                 <ProtectRoute>
-                  {defaultGroup ? (
-                    <Navigate to={`/group/${defaultGroup}`} />
+                  {defaultGroupCode ? (
+                    <Navigate to={`/group/${defaultGroupCode}`} />
                   ) : (
                     <HomePage />
                   )}

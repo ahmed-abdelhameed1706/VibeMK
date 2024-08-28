@@ -5,7 +5,7 @@ const API_URL = "http://localhost:5000/api";
 
 axios.defaults.withCredentials = true;
 
-export const useGroupStore = create((set) => ({
+export const useGroupStore = create((set, get) => ({
   group: null,
   userGroups: [],
   groupMembers: [],
@@ -14,7 +14,8 @@ export const useGroupStore = create((set) => ({
   message: null,
   newVideoUrl: "",
   selectedMember: null,
-  isDefaultGroup: false,
+  defaultGroupCode: localStorage.getItem("defaultGroupCode") || "",
+  defaultGroupName: localStorage.getItem("defaultGroupName") || "",
 
   createGroup: async (name) => {
     set({ isLoading: true, error: null });
@@ -60,6 +61,40 @@ export const useGroupStore = create((set) => ({
     } catch (error) {
       set({
         error: error.response.data.message || "Error Fetching Groups",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  toggleDefaultGroup: async (groupCode) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const currentDefaultGroupCode = get().defaultGroupCode;
+
+      if (currentDefaultGroupCode === groupCode) {
+        // Remove from local storage and Zustand store
+        localStorage.removeItem("defaultGroupCode");
+        localStorage.removeItem("defaultGroupName"); // Remove name as well
+        set({ defaultGroupCode: "", defaultGroupName: "", isLoading: false });
+      } else {
+        // Set the group code and name to local storage and Zustand store
+        const res = await axios.get(`${API_URL}/group/${groupCode}`);
+        const groupName = res.data.group.name;
+
+        localStorage.setItem("defaultGroupCode", groupCode);
+        localStorage.setItem("defaultGroupName", groupName); // Store name as well
+
+        set({
+          defaultGroupCode: groupCode,
+          defaultGroupName: groupName,
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error Toggling Default Group",
         isLoading: false,
       });
       throw error;

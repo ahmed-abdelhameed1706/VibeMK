@@ -11,7 +11,16 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 
 const GroupPage = () => {
   const navigate = useNavigate();
-  const { groupMembers, getGroup, isLoading, error, group } = useGroupStore();
+  const {
+    groupMembers,
+    getGroup,
+    isLoading,
+    error,
+    group,
+    toggleDefaultGroup,
+    defaultGroupCode,
+    defaultGroupName,
+  } = useGroupStore();
   const { addVideo, videoError, videoIsLoading, getVideosForUser, userVideos } =
     useVideoStore();
 
@@ -19,8 +28,8 @@ const GroupPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [newVideoUrl, setNewVideoUrl] = useState("");
-  const [isDefaultGroup, setIsDefaultGroup] = useState(false);
   const [isFetchingVideos, setIsFetchingVideos] = useState(true);
+  const [currentDefaultGroupName, setCurrentDefaultGroupName] = useState("");
 
   const { code } = useParams();
 
@@ -59,6 +68,10 @@ const GroupPage = () => {
     fetchVideosForUser();
   }, [getVideosForUser, selectedMember, group]);
 
+  useEffect(() => {
+    setCurrentDefaultGroupName(defaultGroupName);
+  }, [defaultGroupName]);
+
   const handleSelectMember = (member) => {
     setSelectedMember(member);
     setIsUserModalOpen(false); // Close the user list modal on selection
@@ -89,15 +102,7 @@ const GroupPage = () => {
   };
 
   const handleToggleDefaultGroup = () => {
-    const newStatus = !isDefaultGroup;
-    setIsDefaultGroup(newStatus);
-    localStorage.setItem("defaultGroup", newStatus.toString());
-
-    if (newStatus) {
-      localStorage.setItem("defaultGroupPage", code);
-    } else {
-      localStorage.removeItem("defaultGroupPage");
-    }
+    toggleDefaultGroup(group.code);
   };
 
   if (isLoading) {
@@ -106,11 +111,33 @@ const GroupPage = () => {
 
   return (
     <div className="p-4 md:p-8 flex flex-col bg-gradient-to-br from-gray-900 via-green-900 to-emerald-900">
+      {/* Group Information Section */}
+      <div className="mb-4 flex flex-col md:flex-row justify-between items-center bg-gray-800 bg-opacity-50 rounded-lg p-4 shadow-lg">
+        <div className="text-center md:text-left">
+          <h1 className="text-2xl md:text-3xl font-bold text-green-500">
+            {group?.name}
+          </h1>
+          <p className="text-sm md:text-base text-gray-400">
+            Code: {group?.code}
+          </p>
+        </div>
+        {defaultGroupName ? (
+          <p className="mt-2 md:mt-0 text-sm md:text-base text-green-400 md:ml-4">
+            Default Group : {currentDefaultGroupName}
+          </p>
+        ) : (
+          ""
+        )}
+      </div>
       {/* Back to My Groups Button */}
       <div className="mb-4 flex justify-between items-center gap-4">
         <GradientButton label="My Groups" onClick={handleBackToMyGroups} />
         <GradientButton
-          label={isDefaultGroup ? "Remove Default" : "Set as Default"}
+          label={
+            defaultGroupCode === group?.code
+              ? "Remove Default"
+              : "Set as Default"
+          }
           onClick={handleToggleDefaultGroup}
         />
       </div>
