@@ -13,13 +13,17 @@ import { protectRoute } from "./middlewares/protectRoute.js";
 
 import { connectToMongo } from "./DB/connectToMongo.js";
 
+import path from "path";
+
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
+
+const __dirname = path.resolve();
 
 const app = express();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: "*", credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -40,6 +44,14 @@ app.use(
 
   videoRouter
 );
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
 
 app.listen(PORT, () => {
   connectToMongo();

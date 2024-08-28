@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://localhost:5001/api";
 
 axios.defaults.withCredentials = true;
 
@@ -125,7 +125,10 @@ export const useGroupStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       await axios.post(`${API_URL}/group/${groupId}/leave`);
-      set({ isLoading: false });
+      set((state) => ({
+        userGroups: state.userGroups.filter((group) => group._id !== groupId),
+        isLoading: false,
+      }));
     } catch (error) {
       set({
         error: error.response.data.message || "Error Leaving Group",

@@ -66,13 +66,11 @@ export const getGroup = async (req, res) => {
     const group = await Group.findOne({ code: groupCode, members: user._id });
 
     if (!group) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message:
-            "You are not a part of this group, join using the joining form.",
-        });
+      return res.status(404).json({
+        success: false,
+        message:
+          "You are not a part of this group, join using the joining form.",
+      });
     }
 
     const populatedGroup = await group.populate({
@@ -130,10 +128,24 @@ export const leaveGroup = async (req, res) => {
       });
     }
 
+    const videosToDelete = await Video.find({
+      owner: user._id,
+      group: groupId,
+    });
+    const videoIdsToDelete = videosToDelete.map((video) => video._id);
+    await Video.deleteMany({ _id: { $in: videoIdsToDelete } });
+
+    // Step 2: Remove references to these videos from the User collection
+    await user.updateOne({ $pull: { videos: { $in: videoIdsToDelete } } });
+
+    // Step 3: Remove references to these videos from the Group collection
+    await group.updateOne({ $pull: { videos: { $in: videoIdsToDelete } } });
+
+    // Step 4: Remove user from group members
     await group.updateOne({ $pull: { members: user._id } });
+
+    // Step 5: Remove group from user groups
     await user.updateOne({ $pull: { groups: group._id } });
-    await user.updateOne({ $pull: { videos: { group: group._id } } });
-    await group.updateOne({ $pull: { videos: { owner: user._id } } });
 
     const updatedGroup = await Group.findById(groupId);
 

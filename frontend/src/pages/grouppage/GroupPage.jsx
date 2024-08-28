@@ -83,10 +83,10 @@ const GroupPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleLeaveGroup = () => {
+  const handleLeaveGroup = async () => {
     try {
       leaveGroup(group._id);
-      getGroupsForUser();
+      await getGroupsForUser();
       navigate("/my-groups");
     } catch (error) {
       console.error(error);
