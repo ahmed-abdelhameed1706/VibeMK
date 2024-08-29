@@ -61,4 +61,17 @@ export const useVideoStore = create((set) => ({
       throw error;
     }
   },
+  getVideo: async (videoId) => {
+    set({ videoIsLoading: true, videoError: null });
+    try {
+      const res = await axios.get(`${API_URL}/video?videoId=${videoId}`);
+      set({ video: res.data.video, videoIsLoading: false });
+    } catch (error) {
+      set({
+        videoError: error.response.data.message || "Error Fetching Video",
+        videoIsLoading: false,
+      });
+      throw error;
+    }
+  },
 }));

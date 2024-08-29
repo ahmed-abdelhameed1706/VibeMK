@@ -11,6 +11,7 @@ import {
   deleteVideo,
   getVideosForUserPerGroup,
   addUserToSeenBy,
+  getVideo,
 } from "../controllers/video.controller.js";
 
 router.post("/add", validateVideoObjectId, addVideo);
@@ -18,5 +19,6 @@ router.put("/update", validateVideoObjectId, updateVideo);
 router.delete("/delete", validateVideoObjectId, deleteVideo);
 router.get("/user", validateUserObjectId, getVideosForUserPerGroup);
 router.put("/seen", validateVideoObjectId, addUserToSeenBy);
+router.get("/", validateVideoObjectId, getVideo);
 
 export default router;

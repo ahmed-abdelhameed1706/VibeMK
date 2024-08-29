@@ -64,6 +64,42 @@ export const addVideo = async (req, res) => {
   }
 };
 
+export const getVideo = async (req, res) => {
+  try {
+    const { videoId } = req.query;
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (!videoId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Video ID is required" });
+    }
+
+    const video = await Video.findById(videoId).populate("owner", "fullName");
+
+    if (!video) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Video not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Video retrieved successfully",
+      video,
+    });
+  } catch (error) {
+    console.error("Error in getVideo controller: ", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 export const updateVideo = async (req, res) => {
   try {
     const { videoId, updatedUrl } = req.body;
@@ -235,8 +271,9 @@ export const getVideosForUserPerGroup = async (req, res) => {
     const videos = await Video.find({
       group: groupId,
       owner: requestedUserId,
-    }).sort({ createdAt: -1 }).populate("seenBy", "fullName");
-
+    })
+      .sort({ createdAt: -1 })
+      .populate("seenBy", "fullName");
 
     if (!videos) {
       return res
