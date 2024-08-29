@@ -22,6 +22,7 @@ const GroupPage = () => {
     defaultGroupName,
     leaveGroup,
     getGroupsForUser,
+    inviteToGroup
   } = useGroupStore();
   const { addVideo, videoError, videoIsLoading, getVideosForUser, userVideos } =
     useVideoStore();
@@ -32,6 +33,8 @@ const GroupPage = () => {
   const [newVideoUrl, setNewVideoUrl] = useState("");
   const [isFetchingVideos, setIsFetchingVideos] = useState(true);
   const [currentDefaultGroupName, setCurrentDefaultGroupName] = useState("");
+
+  const [email, setEmail] = useState("");
 
   const { code } = useParams();
 
@@ -81,6 +84,16 @@ const GroupPage = () => {
 
   const handleInviteToGroup = () => {
     setIsModalOpen(true);
+  };
+
+  const handleInviteMemberToGroup = async () => {
+    try {
+      await inviteToGroup(email, code);
+      setEmail("");
+    } catch (error) {
+      console.error(error);
+    }
+    setIsModalOpen(false);
   };
 
   const handleLeaveGroup = async () => {
@@ -268,9 +281,7 @@ const GroupPage = () => {
                     videoId={video._id}
                     url={video.url}
                     updatedAt={video.updatedAt}
-                    seenBy={video.seenBy
-                      .map((user) => user.fullName)
-                      .join(", ")}
+                    seenBy={video.seenBy.map(user => user.fullName)}
                   />
                 ))}
               </div>
@@ -334,13 +345,15 @@ const GroupPage = () => {
           <input
             type="email"
             placeholder="Enter email"
-            className="w-full p-2 mb-4 bg-gray-800 rounded-lg"
+            className="w-full pl-10 pr-3 py-2 bg-gray-800 bg-opacity-50 rounded-lg border
+                        border-gray-700 focus:border-green-500 focus:ring-2 focus:ring-green-500
+                        text-white placeholder-gray-400 transition duration-200 outline-none"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <GradientButton
             label="Send Invitation"
-            onClick={() => {
-              /* Handle send invitation */
-            }}
+            onClick={handleInviteMemberToGroup}
           />
         </Modal>
       )}

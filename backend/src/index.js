@@ -23,7 +23,7 @@ const __dirname = path.resolve();
 
 const app = express();
 
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({ origin: "https://vibemk.eng-ahmed.me", credentials: true }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

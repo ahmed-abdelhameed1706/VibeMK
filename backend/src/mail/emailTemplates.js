@@ -115,9 +115,9 @@ export const INVITATION_EMAIL_TEMPLATE = `
     <div style="text-align: center; margin: 30px 0;">
       <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4CAF50;">{groupCode}</span>
     </div>
-    <p>Enter this code on the <a href="http://localhost:5173/join-group">join group</a> page to join your friends.</p>
+    <p>Enter this code on the <a href="http://vibemk.eng-ahmed.me/">join group</a> page to join your friends.</p>
     <p>This code does not expire.</p>
-    <p>If you didn't create an account with us, you can click <a href="http://localhost:5173/register">here</a> to create an account and join your friends.</p>
+    <p>If you didn't create an account with us, you can click <a href="https://vibemk.eng-ahmed.me/register">here</a> to create an account and join your friends.</p>
     <p>Best regards,<br>VibeMK Dev Team</p>
   </div>
   <div style="text-align: center; margin-top: 20px; color: #888; font-size: 0.8em;">

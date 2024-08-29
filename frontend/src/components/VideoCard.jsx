@@ -7,6 +7,15 @@ import { Tooltip } from "react-tooltip";
 
 import { useVideoStore } from "../store/videoStore";
 
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
   const { updateSeenBy } = useVideoStore();
 
@@ -39,7 +48,18 @@ const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
       <p className="text-gray-400 text-sm mt-2">
         Updated at: {formatDate(updatedAt)}
       </p>
-      <p className="text-gray-400 text-sm">Seen by: {seenBy}</p>
+      <p>
+        Seen by: {seenBy.map((user, index) => (
+          <span
+            key={index}
+            style={{ color: getRandomColor() }}
+            className="user-name"
+          >
+            {user}
+            {index < seenBy.length - 1 && ', '}
+          </span>
+        ))}
+      </p>
     </motion.div>
   );
 };

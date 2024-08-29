@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "http://localhost:5001/api";
+const API_URL = "/api";
 
 axios.defaults.withCredentials = true;
 
@@ -36,7 +36,7 @@ export const useAuthStore = create((set) => ({
   login: async ({ email, password }) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, {
+      const res = await axios.post(`/api/auth/login`, {
         email,
         password,
       });

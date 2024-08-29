@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "http://localhost:5001/api";
+const API_URL = "/api";
 
 axios.defaults.withCredentials = true;
 
@@ -132,6 +132,19 @@ export const useGroupStore = create((set, get) => ({
     } catch (error) {
       set({
         error: error.response.data.message || "Error Leaving Group",
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+  inviteToGroup: async (email, code) => {
+    set({ isLoading: true, error: null });
+    try {
+      await axios.post(`${API_URL}/group/${code}/invite`, { email });
+      set({ isLoading: false });
+    } catch (error) {
+      set({
+        error: error.response.data.message || "Error Inviting to Group",
         isLoading: false,
       });
       throw error;

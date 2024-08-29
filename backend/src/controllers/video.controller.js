@@ -235,7 +235,8 @@ export const getVideosForUserPerGroup = async (req, res) => {
     const videos = await Video.find({
       group: groupId,
       owner: requestedUserId,
-    }).populate("seenBy", "fullName");
+    }).sort({ createdAt: -1 }).populate("seenBy", "fullName");
+
 
     if (!videos) {
       return res
