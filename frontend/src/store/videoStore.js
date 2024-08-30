@@ -23,8 +23,8 @@ export const useVideoStore = create((set, get) => ({
       set({ video: res.data.video, videoIsLoading: false });
     } catch (error) {
       set({
-        error: error.response.data.message || "Error Adding Video",
-        isLoading: false,
+        videoError: error.response.data.message || "Error Adding Video",
+        videoIsLoading: false,
       });
       throw error;
     }
