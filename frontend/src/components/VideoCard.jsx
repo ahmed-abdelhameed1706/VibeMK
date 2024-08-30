@@ -92,10 +92,24 @@ const VideoCard = ({
       url.slice(0, httpIndex).trim() + " " + url.slice(endOfUrlIndex).trim();
     const afterPart = url.slice(httpIndex, endOfUrlIndex).trim();
 
-    // Split the before part into lines with a maximum of 30 characters each
+    // Split the before part into lines, ensuring words are not split
     const wrappedBeforePart = beforePart
-      .match(/.{1,30}/g) // Match up to 30 characters at a time
-      .join("\n"); // Join lines with a newline character
+      .split(" ")
+      .reduce(
+        (acc, word) => {
+          const lastLine = acc[acc.length - 1];
+
+          if (lastLine.length + word.length + 1 <= 30) {
+            acc[acc.length - 1] = lastLine + (lastLine ? " " : "") + word;
+          } else {
+            acc.push(word);
+          }
+
+          return acc;
+        },
+        [""]
+      )
+      .join("\n");
 
     return {
       before: wrappedBeforePart,
@@ -123,7 +137,7 @@ const VideoCard = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <p className="mb-2 text-white">{before}</p>
+      <p className="mb-2 text-white whitespace-pre-wrap">{before}</p>
 
       {after && (
         <a
