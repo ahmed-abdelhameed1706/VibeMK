@@ -75,12 +75,22 @@ const VideoCard = ({
   }, [url]);
 
   const splitUrl = (url) => {
+    // Find the index of the first "http"
     const httpIndex = url.indexOf("http");
+
+    // If "http" is not found, return the entire string as before
     if (httpIndex === -1) return { before: url, after: "" };
 
+    // Find the index of the first space after "http"
+    const spaceIndex = url.indexOf(" ", httpIndex);
+
+    // If there's no space after the URL, take the rest of the string as part of the URL
+    const endOfUrlIndex = spaceIndex === -1 ? url.length : spaceIndex;
+
     return {
-      before: url.slice(0, httpIndex),
-      after: url.slice(httpIndex),
+      before:
+        url.slice(0, httpIndex).trim() + " " + url.slice(endOfUrlIndex).trim(),
+      after: url.slice(httpIndex, endOfUrlIndex).trim(),
     };
   };
 
