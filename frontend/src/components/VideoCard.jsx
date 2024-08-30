@@ -1,5 +1,8 @@
 import { motion } from "framer-motion";
 import { formatDate } from "../utils/date";
+import Modal from "./Modal";
+import GradientButton from "./GradientButton";
+import { useEffect, useState } from "react";
 
 import "react-tooltip/dist/react-tooltip.css";
 
@@ -7,10 +10,7 @@ import { Tooltip } from "react-tooltip";
 
 import { useVideoStore } from "../store/videoStore";
 
-import { Edit, Trash } from "lucide-react";
-
-import { useAuthStore } from "../store/authStore";
-import { useEffect } from "react";
+import { Edit, Trash, Star } from "lucide-react";
 
 const getRandomColor = () => {
   let color;
@@ -37,9 +37,20 @@ const isLightColor = (hex) => {
   return luminance > 186; // Adjust threshold as needed
 };
 
-const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
-  const { updateSeenBy, video, getVideo } = useVideoStore();
-  const { user } = useAuthStore();
+const VideoCard = ({
+  url,
+  updatedAt,
+  seenBy,
+  videoId,
+  userIsOwner,
+  onDelete,
+  starred,
+  onStar,
+}) => {
+  const { updateSeenBy, updateVideo } = useVideoStore();
+  const [isStarred, setIsStarred] = useState(starred);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [updatedUrl, setupdatedUrl] = useState("");
 
   const handleSeenBy = async () => {
     try {
@@ -49,16 +60,19 @@ const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
     }
   };
 
+  const handleStar = async () => {
+    setIsStarred(!isStarred); // Optimistic update
+    try {
+      await onStar(videoId);
+    } catch (error) {
+      setIsStarred(isStarred); // Revert on error
+      console.error("Failed to star video", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        await getVideo(videoId);
-      } catch (error) {
-        console.error("Failed to fetch video", error);
-      }
-    };
-    fetchVideo();
-  }, [videoId, getVideo]);
+    setupdatedUrl(url);
+  }, [url]);
 
   const splitUrl = (url) => {
     const httpIndex = url.indexOf("http");
@@ -72,13 +86,18 @@ const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
 
   const { before, after } = splitUrl(url);
 
-  console.log("user is ", user.fullName);
-  console.log("video is ", video);
-  console.log("video owner is ", video?.owner.fullName);
+  const handleEdit = async () => {
+    try {
+      if (updatedUrl) {
+        await updateVideo(videoId, updatedUrl);
+        setIsModalOpen(false);
+        setIsStarred(starred);
+      }
+    } catch (error) {
+      console.error("Failed to update video", error);
+    }
+  };
 
-  const handleEdit = () => {};
-
-  const handleDelete = () => {};
   return (
     <motion.div
       className="p-4 bg-gray-800 rounded-lg shadow-lg"
@@ -87,6 +106,7 @@ const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
       transition={{ duration: 0.5 }}
     >
       <p className="mb-2 text-white">{before}</p>
+
       {after && (
         <a
           href={after}
@@ -114,6 +134,53 @@ const VideoCard = ({ url, updatedAt, seenBy, videoId }) => {
           </span>
         ))}
       </p>
+
+      <div className="flex justify-end mt-4 gap-2">
+        {userIsOwner && (
+          <>
+            <Edit
+              size={24}
+              className="cursor-pointer text-green-500"
+              data-tip="Edit"
+              onClick={() => setIsModalOpen(true)}
+            />
+            <Trash
+              size={24}
+              className="cursor-pointer text-red-500 hover:text-red-500 transition-colors duration-200 hover:fill-current"
+              data-tip="Delete"
+              onClick={onDelete}
+            />
+          </>
+        )}
+
+        <Star
+          size={24}
+          className={`cursor-pointer transition-colors duration-200 ${
+            starred
+              ? "text-yellow-400 fill-current hover:text-yellow-300"
+              : "text-gray-400 hover:text-yellow-200 hover:fill-current"
+          }`}
+          onClick={handleStar}
+          data-tip={starred ? "Unstar" : "Star"}
+        />
+      </div>
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 text-center text-green-500">
+            Invite to Group
+          </h2>
+          <input
+            type="text"
+            placeholder="Video URL"
+            className="w-full pl-10 pr-3 py-2 bg-gray-800 bg-opacity-50 rounded-lg border
+                        border-gray-700 focus:border-green-500 focus:ring-2 focus:ring-green-500
+                        text-white placeholder-gray-400 transition duration-200 outline-none"
+            value={updatedUrl}
+            onChange={(e) => setupdatedUrl(e.target.value)}
+          />
+          <GradientButton label="Submit Edit" onClick={handleEdit} />
+        </Modal>
+      )}
     </motion.div>
   );
 };

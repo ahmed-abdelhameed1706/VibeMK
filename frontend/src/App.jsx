@@ -19,6 +19,7 @@ import RedirectAuthenticatedUsers from "./components/Redirects/RedirectAuthentic
 import LoadingSpinner from "./components/LoadingSpinner";
 import Header from "./components/Header/Header";
 import DashboardPage from "./pages/dashboardpage/DashboardPage";
+import StarredVideosPage from "./pages/starredvideospage/StarredVIdeosPage";
 
 function App() {
   const { user, getMe, isCheckingAuth, isAuthenticated } = useAuthStore();
@@ -141,6 +142,14 @@ function App() {
               element={
                 <ProtectRoute>
                   <GroupPage />
+                </ProtectRoute>
+              }
+            />
+            <Route
+              path="/starred"
+              element={
+                <ProtectRoute>
+                  <StarredVideosPage />
                 </ProtectRoute>
               }
             />

@@ -35,6 +35,12 @@ const userSchema = new mongoose.Schema(
         ref: "Group",
       },
     ],
+    starredVideos: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
     isAdmin: {
       type: Boolean,
       default: false,

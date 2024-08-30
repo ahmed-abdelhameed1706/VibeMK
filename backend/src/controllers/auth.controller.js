@@ -191,7 +191,9 @@ export const logout = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    const user = await User.findById(req.userId)
+      .select("-password")
+      .populate("starredVideos");
     if (!user) {
       return res.status(400).json({
         success: false,

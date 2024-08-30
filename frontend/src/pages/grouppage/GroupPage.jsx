@@ -7,6 +7,7 @@ import Modal from "../../components/Modal";
 import { Send } from "lucide-react";
 import { useGroupStore } from "../../store/groupStore";
 import { useVideoStore } from "../../store/videoStore";
+import { useAuthStore } from "../../store/authStore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
 const GroupPage = () => {
@@ -22,10 +23,21 @@ const GroupPage = () => {
     defaultGroupName,
     leaveGroup,
     getGroupsForUser,
-    inviteToGroup
+    inviteToGroup,
   } = useGroupStore();
-  const { addVideo, videoError, videoIsLoading, getVideosForUser, userVideos } =
-    useVideoStore();
+
+  const {
+    addVideo,
+    videoError,
+    videoIsLoading,
+    userVideos,
+    deleteVideo,
+    starVideo,
+    getStarredVideos,
+    getUserVideos,
+  } = useVideoStore();
+
+  const { user } = useAuthStore();
 
   const [selectedMember, setSelectedMember] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,7 +73,8 @@ const GroupPage = () => {
       if (selectedMember) {
         setIsFetchingVideos(true);
         try {
-          await getVideosForUser(selectedMember._id, group._id);
+          await getUserVideos(selectedMember._id, group._id);
+          await getStarredVideos();
         } catch (error) {
           console.error(error);
         } finally {
@@ -71,7 +84,7 @@ const GroupPage = () => {
     };
 
     fetchVideosForUser();
-  }, [getVideosForUser, selectedMember, group]);
+  }, [getUserVideos, getStarredVideos, selectedMember, group]);
 
   useEffect(() => {
     setCurrentDefaultGroupName(defaultGroupName);
@@ -114,7 +127,7 @@ const GroupPage = () => {
     try {
       await addVideo(newVideoUrl, group._id);
       if (selectedMember) {
-        await getVideosForUser(selectedMember._id, group._id);
+        await getUserVideos(selectedMember._id, group._id);
       }
     } catch (error) {
       console.error(error);
@@ -275,15 +288,23 @@ const GroupPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userVideos.map((video, index) => (
-                  <VideoCard
-                    key={index}
-                    videoId={video._id}
-                    url={video.url}
-                    updatedAt={video.updatedAt}
-                    seenBy={video.seenBy.map(user => user.fullName)}
-                  />
-                ))}
+                {userVideos.map((video) => {
+                  const userIsOwner = video.owner === user._id;
+
+                  return (
+                    <VideoCard
+                      key={video._id}
+                      videoId={video._id}
+                      url={video.url}
+                      updatedAt={video.updatedAt}
+                      seenBy={video.seenBy.map((user) => user.fullName)}
+                      userIsOwner={userIsOwner}
+                      onDelete={() => deleteVideo(video._id)}
+                      onStar={() => starVideo(video._id)}
+                      starred={video.starred}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>

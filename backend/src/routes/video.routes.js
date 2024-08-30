@@ -12,13 +12,19 @@ import {
   getVideosForUserPerGroup,
   addUserToSeenBy,
   getVideo,
+  starVideo,
+  getStarredVideos,
+  getUserVideos,
 } from "../controllers/video.controller.js";
 
 router.post("/add", validateVideoObjectId, addVideo);
-router.put("/update", validateVideoObjectId, updateVideo);
-router.delete("/delete", validateVideoObjectId, deleteVideo);
-router.get("/user", validateUserObjectId, getVideosForUserPerGroup);
+router.put("/update/:videoId", validateVideoObjectId, updateVideo);
+router.delete("/delete/:videoId", validateVideoObjectId, deleteVideo);
+// router.get("/user", validateUserObjectId, getVideosForUserPerGroup);
 router.put("/seen", validateVideoObjectId, addUserToSeenBy);
 router.get("/", validateVideoObjectId, getVideo);
+router.put("/star/:videoId", validateVideoObjectId, starVideo);
+router.get("/starred", getStarredVideos);
+router.get("/user", getUserVideos);
 
 export default router;

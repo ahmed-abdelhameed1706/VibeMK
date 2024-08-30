@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 export const validateUserObjectId = (req, res, next) => {
   const { requestedUserId, groupId } = req.query;
-  console.log("Received requestedUserId:", requestedUserId);
 
   if (
     !mongoose.Types.ObjectId.isValid(requestedUserId) ||

@@ -102,7 +102,8 @@ export const getVideo = async (req, res) => {
 
 export const updateVideo = async (req, res) => {
   try {
-    const { videoId, updatedUrl } = req.body;
+    const { updatedUrl } = req.body;
+    const { videoId } = req.params;
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -123,7 +124,7 @@ export const updateVideo = async (req, res) => {
         .json({ success: false, message: "URL is required" });
     }
 
-    const video = await Video.findById(videoId);
+    const video = await Video.findById(videoId).populate("seenBy", "fullName");
 
     if (!video) {
       return res
@@ -156,7 +157,7 @@ export const deleteVideo = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { videoId } = req.body;
+    const { videoId } = req.params;
 
     if (!videoId) {
       return res
@@ -222,7 +223,7 @@ export const deleteVideo = async (req, res) => {
 
 export const getVideosForUserPerGroup = async (req, res) => {
   try {
-    const { requestedUserId, groupId } = req.query;
+    const { requestedUserId, groupId } = req.params;
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -335,6 +336,176 @@ export const addUserToSeenBy = async (req, res) => {
       .json({ success: true, message: "User viewed the video", videoViewers });
   } catch (error) {
     console.error("Error in addUserToSeenBy controller: ", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const starVideo = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (!videoId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Video ID is required" });
+    }
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Video not found" });
+    }
+
+    if (user.starredVideos.includes(video._id)) {
+      user.starredVideos.pull(video._id);
+      await user.save();
+    } else {
+      user.starredVideos.push(video._id);
+      await user.save();
+    }
+
+    const starredVideos = await Video.find({
+      _id: { $in: user.starredVideos },
+    })
+      .sort({ createdAt: -1 })
+      .populate("seenBy", "fullName");
+
+    if (!starredVideos) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No starred videos found" });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Video starred by user", starredVideos });
+  } catch (error) {
+    console.error("Error in starVideo controller: ", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const getStarredVideos = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).populate("starredVideos");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const starredVideos = await Video.find({
+      _id: { $in: user.starredVideos },
+    })
+      .sort({ createdAt: -1 })
+      .populate("seenBy", "fullName");
+
+    if (!starredVideos) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No starred videos found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Starred videos retrieved",
+      starredVideos,
+    });
+  } catch (error) {
+    console.error("Error in getStarredVideos controller: ", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const getUserVideos = async (req, res) => {
+  try {
+    const { selectedUserId, groupId } = req.query;
+    const authenticatedUserId = req.userId;
+
+    if (!selectedUserId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Selected user ID is required" });
+    }
+
+    if (!groupId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Group ID is required" });
+    }
+
+    // Find authenticated user and ensure they are part of the group
+    const authenticatedUser = await User.findById(authenticatedUserId);
+
+    if (!authenticatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Authenticated user not found" });
+    }
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Group not found" });
+    }
+
+    if (
+      !group.members.includes(selectedUserId) ||
+      !group.members.includes(authenticatedUserId)
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Both users must be in the group" });
+    }
+
+    // Retrieve selected user’s videos
+    const selectedUserVideos = await Video.find({
+      group: groupId,
+      owner: selectedUserId,
+    })
+      .sort({ createdAt: -1 })
+      .populate("seenBy", "fullName");
+
+    if (!selectedUserVideos) {
+      return res.status(404).json({
+        success: false,
+        message: "No videos found for the selected user",
+      });
+    }
+
+    // Retrieve authenticated user’s starred videos
+    const starredVideos = await Video.find({
+      _id: { $in: authenticatedUser.starredVideos },
+    })
+      .sort({ createdAt: -1 })
+      .populate("seenBy", "fullName");
+
+    if (!starredVideos) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No starred videos found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Videos retrieved successfully",
+      userVideos: selectedUserVideos,
+      starredVideos,
+    });
+  } catch (error) {
+    console.error("Error in getUserVideos controller: ", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
