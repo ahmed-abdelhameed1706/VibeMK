@@ -177,7 +177,7 @@ const VideoCard = ({
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <h2 className="text-xl md:text-2xl font-bold mb-4 text-center text-green-500">
-            Invite to Group
+            Edit Video URL
           </h2>
           <input
             type="text"
