@@ -37,6 +37,15 @@ const StarredVideosPage = () => {
     navigate("/my-groups");
   };
 
+  const handleDeleteVideo = async (videoId) => {
+    try {
+      await deleteVideo(videoId);
+      await getStarredVideos();
+    } catch (error) {
+      console.error("Failed to delete video", error);
+    }
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -88,7 +97,7 @@ const StarredVideosPage = () => {
                       updatedAt={video.updatedAt}
                       seenBy={video.seenBy.map((user) => user.fullName)}
                       userIsOwner={userIsOwner}
-                      onDelete={() => deleteVideo(video._id)}
+                      onDelete={() => handleDeleteVideo(video._id)}
                       onStar={() => starVideo(video._id)}
                       starred={true}
                     />
