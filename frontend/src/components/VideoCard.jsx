@@ -87,13 +87,21 @@ const VideoCard = ({
     // If there's no space after the URL, take the rest of the string as part of the URL
     const endOfUrlIndex = spaceIndex === -1 ? url.length : spaceIndex;
 
+    // Get the before and after parts
+    const beforePart =
+      url.slice(0, httpIndex).trim() + " " + url.slice(endOfUrlIndex).trim();
+    const afterPart = url.slice(httpIndex, endOfUrlIndex).trim();
+
+    // Split the before part into lines with a maximum of 30 characters each
+    const wrappedBeforePart = beforePart
+      .match(/.{1,30}/g) // Match up to 30 characters at a time
+      .join("\n"); // Join lines with a newline character
+
     return {
-      before:
-        url.slice(0, httpIndex).trim() + " " + url.slice(endOfUrlIndex).trim(),
-      after: url.slice(httpIndex, endOfUrlIndex).trim(),
+      before: wrappedBeforePart,
+      after: afterPart,
     };
   };
-
   const { before, after } = splitUrl(url);
 
   const handleEdit = async () => {
