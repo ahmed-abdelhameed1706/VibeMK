@@ -7,6 +7,7 @@
     "dev": "nodemon backend/src/index.js",
     "start": "NODE_ENV=production node backend/src/index.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
+    "heroku-postbuild": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
     "test": "jest"
   },
   "keywords": [],
