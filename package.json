@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "backend/src/index.js",
+  "engines": {
+    "node": ">=18.x",
+    "npm": ">=8.x"
+  },
   "scripts": {
     "dev": "nodemon backend/src/index.js",
     "start": "NODE_ENV=production node backend/src/index.js",
