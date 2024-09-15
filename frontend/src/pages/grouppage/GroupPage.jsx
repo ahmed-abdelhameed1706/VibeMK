@@ -129,7 +129,7 @@ const GroupPage = () => {
     try {
       await addVideo(newVideoUrl, group._id);
       if (selectedMember) {
-        await getUserVideos(selectedMember._id, group._id);
+        await refetchVideos();
       }
     } catch (error) {
       console.error(error);
@@ -346,6 +346,7 @@ const GroupPage = () => {
                         onDelete={() => deleteVideo(video._id)}
                         onStar={() => starVideo(video._id)}
                         starred={video.starred}
+                        refetchVideos={refetchVideos}
                       />
                     );
                   }

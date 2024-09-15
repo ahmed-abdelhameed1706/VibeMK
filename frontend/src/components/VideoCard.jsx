@@ -1,12 +1,13 @@
+/* eslint-disable react/prop-types */
+
 import { motion } from "framer-motion";
 import { formatDate } from "../utils/date";
 import Modal from "./Modal";
 import GradientButton from "./GradientButton";
 import { useEffect, useState } from "react";
+import { useInfiniteVideosQuery } from "../hooks/useInfiniteVideosQuery";
 
 import "react-tooltip/dist/react-tooltip.css";
-
-import { Tooltip } from "react-tooltip";
 
 import { useVideoStore } from "../store/videoStore";
 
@@ -46,6 +47,7 @@ const VideoCard = ({
   onDelete,
   starred,
   onStar,
+  refetchVideos,
 }) => {
   const { updateSeenBy, updateVideo } = useVideoStore();
   const [isStarred, setIsStarred] = useState(starred);
@@ -64,9 +66,18 @@ const VideoCard = ({
     setIsStarred(!isStarred); // Optimistic update
     try {
       await onStar(videoId);
+      refetchVideos();
     } catch (error) {
       setIsStarred(isStarred); // Revert on error
       console.error("Failed to star video", error);
+    }
+  };
+  const handleOnDelete = async () => {
+    try {
+      await onDelete(videoId);
+      await refetchVideos();
+    } catch (error) {
+      console.error("Failed to delete video", error);
     }
   };
 
@@ -122,6 +133,7 @@ const VideoCard = ({
     try {
       if (updatedUrl) {
         await updateVideo(videoId, updatedUrl);
+        await refetchVideos();
         setIsModalOpen(false);
         setIsStarred(starred);
       }
@@ -180,7 +192,7 @@ const VideoCard = ({
               size={24}
               className="cursor-pointer text-red-500 hover:text-red-500 transition-colors duration-200 hover:fill-current"
               data-tip="Delete"
-              onClick={onDelete}
+              onClick={handleOnDelete}
             />
           </>
         )}
