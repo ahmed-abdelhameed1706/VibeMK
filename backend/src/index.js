@@ -25,8 +25,8 @@ const app = express();
 
 const ORIGIN =
   process.env.NODE_ENV === "production"
-    ? "https://vibemk.eng-ahmed.me"
-    : "http://localhost:5173";
+    ? "https://vibemk.ahmed.software"
+    : "http://localhost:3001";
 
 app.use(cors({ origin: ORIGIN, credentials: true }));
 

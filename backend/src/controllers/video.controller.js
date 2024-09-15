@@ -429,7 +429,7 @@ export const getStarredVideos = async (req, res) => {
 
 export const getUserVideos = async (req, res) => {
   try {
-    const { selectedUserId, groupId } = req.query;
+    const { selectedUserId, groupId, page = 1, limit = 30 } = req.query;
     const authenticatedUserId = req.userId;
 
     if (!selectedUserId) {
@@ -471,11 +471,15 @@ export const getUserVideos = async (req, res) => {
     }
 
     // Retrieve selected user’s videos
+    const skip = (page - 1) * limit;
+
     const selectedUserVideos = await Video.find({
       group: groupId,
       owner: selectedUserId,
     })
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
       .populate("seenBy", "fullName");
 
     if (!selectedUserVideos) {
@@ -492,17 +496,24 @@ export const getUserVideos = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("seenBy", "fullName");
 
-    if (!starredVideos) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No starred videos found" });
-    }
+    const totalVideos = await Video.countDocuments({
+      group: groupId,
+      owner: selectedUserId,
+    });
+
+    const hasNextPage = skip + selectedUserVideos.length < totalVideos;
 
     res.status(200).json({
       success: true,
       message: "Videos retrieved successfully",
       userVideos: selectedUserVideos,
       starredVideos,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalVideos / limit),
+        totalVideos,
+        hasNextPage,
+      },
     });
   } catch (error) {
     console.error("Error in getUserVideos controller: ", error);
