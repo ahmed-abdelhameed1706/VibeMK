@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "/api";
+const API_URL = "http://localhost:5001/api";
 // import.meta.env.NODE_ENV === "production"
 //   ? "/api"
 //   : "http://localhost:5001/api";
@@ -46,7 +46,7 @@ export const useAuthStore = create((set) => ({
       set({ user: res.data.user, isAuthenticated: true, isLoading: false });
     } catch (error) {
       set({
-        error: error.response.data.message || "Error Logging In",
+        error: error.response?.data.message || "Error Logging In",
         isLoading: false,
       });
       throw error;

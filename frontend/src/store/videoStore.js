@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "/api";
+const API_URL = "http://localhost:5001/api";
 // import.meta.env.NODE_ENV === "production"
 //   ? "/api"
 //   : "http://localhost:5001/api";
@@ -15,6 +15,8 @@ export const useVideoStore = create((set, get) => ({
   videoIsLoading: false,
   starredVideos: [],
   selectedUserVideos: [],
+  hasNextPage: true,
+  currentPage: 1,
 
   addVideo: async (url, groupId) => {
     set({ videoIsLoading: true, videoError: null });
@@ -183,22 +185,34 @@ export const useVideoStore = create((set, get) => ({
     }
   },
 
-  getUserVideos: async (selectedUserId, groupId) => {
+  getUserVideos: async (selectedUserId, groupId, page = 1, limit = 10) => {
     set({ videoIsLoading: true, videoError: null });
     try {
       const response = await axios.get(`${API_URL}/video/user`, {
-        params: { selectedUserId, groupId },
+        params: { selectedUserId, groupId, page, limit },
       });
+
       const { starredVideos } = get();
       const starredVideoIds = starredVideos.map((video) => video._id);
-      set({
-        userVideos: response.data.userVideos.map((video) => ({
-          ...video,
-          starred: starredVideoIds.includes(video._id),
-          seenBy: video.seenBy,
-        })),
+
+      const newVideos = response.data.userVideos.map((video) => ({
+        ...video,
+        starred: starredVideoIds.includes(video._id),
+        seenBy: video.seenBy,
+      }));
+
+      set((state) => ({
+        userVideos:
+          page === 1 ? newVideos : [...state.userVideos, ...newVideos],
         videoIsLoading: false,
-      });
+        hasNextPage: newVideos.length === limit, // Assume there's a next page if we got a full page of results
+        currentPage: page,
+      }));
+
+      return {
+        userVideos: newVideos,
+        starredVideos: response.data.starredVideos,
+      };
     } catch (error) {
       set({
         videoError:
@@ -208,4 +222,6 @@ export const useVideoStore = create((set, get) => ({
       throw error;
     }
   },
+
+  resetVideos: () => set({ userVideos: [], currentPage: 1, hasNextPage: true }),
 }));

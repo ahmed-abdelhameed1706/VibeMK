@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import axios from "axios";
 
-const API_URL = "/api";
+const API_URL = "http://localhost:5001/api";
 // import.meta.env.NODE_ENV === "production"
 //   ? "/api"
 //   : "http://localhost:5001/api";

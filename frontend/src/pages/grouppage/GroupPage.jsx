@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import GroupMember from "../../components/GroupMember";
 import VideoCard from "../../components/VideoCard";
@@ -9,13 +9,15 @@ import { useGroupStore } from "../../store/groupStore";
 import { useVideoStore } from "../../store/videoStore";
 import { useAuthStore } from "../../store/authStore";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { useInfiniteVideosQuery } from "../../hooks/useInfiniteVideosQuery";
+import { useRef } from "react";
 
 const GroupPage = () => {
   const navigate = useNavigate();
   const {
     groupMembers,
     getGroup,
-    isLoading,
+
     error,
     group,
     toggleDefaultGroup,
@@ -30,7 +32,7 @@ const GroupPage = () => {
     addVideo,
     videoError,
     videoIsLoading,
-    userVideos,
+
     deleteVideo,
     starVideo,
     getStarredVideos,
@@ -138,6 +140,32 @@ const GroupPage = () => {
   const handleToggleDefaultGroup = () => {
     toggleDefaultGroup(group.code);
   };
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch: refetchVideos,
+  } = useInfiniteVideosQuery(selectedMember?._id, group?._id);
+
+  const userVideos = data ? data.pages.flatMap((page) => page.userVideos) : [];
+
+  const observer = useRef();
+  const lastVideoElementRef = useCallback(
+    (node) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasNextPage, fetchNextPage]
+  );
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -274,9 +302,10 @@ const GroupPage = () => {
               className="ml-2 inline-flex items-center justify-center space-x-2 !text-sm flex-1 !mt-0 h-10 w-6"
             />
           </div>
+          {/* VIDEO CARDS DISPLAY SECTION */}
 
           <div className="h-[580px] overflow-y-auto">
-            {isFetchingVideos ? (
+            {isLoading && userVideos.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <LoadingSpinner />
               </div>
@@ -288,23 +317,44 @@ const GroupPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userVideos.map((video) => {
+                {userVideos.map((video, index) => {
                   const userIsOwner = video.owner === user._id;
-
-                  return (
-                    <VideoCard
-                      key={video._id}
-                      videoId={video._id}
-                      url={video.url}
-                      updatedAt={video.updatedAt}
-                      seenBy={video.seenBy.map((user) => user.fullName)}
-                      userIsOwner={userIsOwner}
-                      onDelete={() => deleteVideo(video._id)}
-                      onStar={() => starVideo(video._id)}
-                      starred={video.starred}
-                    />
-                  );
+                  if (userVideos.length === index + 1) {
+                    return (
+                      <div ref={lastVideoElementRef} key={video._id}>
+                        <VideoCard
+                          videoId={video._id}
+                          url={video.url}
+                          updatedAt={video.updatedAt}
+                          seenBy={video.seenBy.map((user) => user.fullName)}
+                          userIsOwner={userIsOwner}
+                          onDelete={() => deleteVideo(video._id)}
+                          onStar={() => starVideo(video._id)}
+                          starred={video.starred}
+                        />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <VideoCard
+                        key={video._id}
+                        videoId={video._id}
+                        url={video.url}
+                        updatedAt={video.updatedAt}
+                        seenBy={video.seenBy.map((user) => user.fullName)}
+                        userIsOwner={userIsOwner}
+                        onDelete={() => deleteVideo(video._id)}
+                        onStar={() => starVideo(video._id)}
+                        starred={video.starred}
+                      />
+                    );
+                  }
                 })}
+              </div>
+            )}
+            {isFetchingNextPage && (
+              <div className="flex justify-center mt-4">
+                <LoadingSpinner />
               </div>
             )}
           </div>
