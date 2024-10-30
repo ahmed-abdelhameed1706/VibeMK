@@ -14,19 +14,23 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const {
-    group,
+    //group,
     createGroup,
     error,
     joinGroup,
     createGroupError,
     joinGroupError,
+    isCreatingGroup,
   } = useGroupStore();
 
   const handleCreateGroup = async (e) => {
     e.preventDefault();
     try {
-      await createGroup(groupName);
-      navigate(`/group/${group.code}`); // Navigate to a relevant page after creation
+      const newGroup = await createGroup(groupName);
+      setGroupName(""); // Clear the form
+      if (newGroup?.code) {
+        navigate(`/group/${newGroup.code}`);
+      }
     } catch (error) {
       console.error("Failed to create group:", error);
     }
@@ -85,7 +89,7 @@ const HomePage = () => {
               <GradientButton
                 type="submit"
                 label={"Create Group"}
-                isLoading={isLoading}
+                isLoading={isCreatingGroup}
                 className="!mt-0"
               />
             </form>

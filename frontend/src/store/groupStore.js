@@ -10,11 +10,13 @@ axios.defaults.withCredentials = true;
 
 export const useGroupStore = create((set, get) => ({
   group: null,
+
   userGroups: [],
   groupMembers: [],
   error: null,
   joinGroupError: null,
   createGroupError: null,
+  isCreatingGroup: false,
   isLoading: false,
   message: null,
   newVideoUrl: "",
@@ -23,17 +25,19 @@ export const useGroupStore = create((set, get) => ({
   defaultGroupName: localStorage.getItem("defaultGroupName") || "",
 
   createGroup: async (name) => {
-    set({ isLoading: true, error: null });
+    set({ isCreatingGroup: true, error: null });
     try {
       const res = await axios.post(`${API_URL}/group`, { name });
+      const newGroup = res.data.group;
       set({
-        group: res.data.group,
-        isLoading: false,
+        group: newGroup,
+        isCreatingGroup: false,
       });
+      return newGroup;
     } catch (error) {
       set({
         createGroupError: error.response.data.message || "Error Creating Group",
-        isLoading: false,
+        isCreatingGroup: false,
       });
       throw error;
     }

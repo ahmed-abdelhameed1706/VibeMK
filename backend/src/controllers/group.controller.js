@@ -46,6 +46,7 @@ export const createGroup = async (req, res) => {
       success: true,
       message: "Group Created Successfully",
       group,
+      code,
     });
   } catch (error) {
     console.error("Error in createGroup controller: ", error);
