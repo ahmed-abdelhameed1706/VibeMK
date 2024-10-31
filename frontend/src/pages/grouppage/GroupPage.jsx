@@ -331,6 +331,7 @@ const GroupPage = () => {
                           onDelete={() => deleteVideo(video._id)}
                           onStar={() => starVideo(video._id)}
                           starred={video.starred}
+                          refetchVideos={refetchVideos}
                         />
                       </div>
                     );
